@@ -64,7 +64,7 @@ flowchart LR
 
   API -- "Logs/metrics/traces" --> OBS
   API -- "Secrets at runtime" --> SEC
-  
+```
 ---
 
 ## 🧠 Stack Técnico
