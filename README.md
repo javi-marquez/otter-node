@@ -17,26 +17,54 @@ Diseñado para ser escalable, limpio y modular. Backend para la aplicación móv
 
 ---
 
-## 🧩 Arquitectura
-
-<p align="center">
-  <img src="./assets/diagrama.png" alt="Arquitectura del proyecto" width="700"/>
-</p>
-
----
-
 ## 🗃️ Modelo de Datos
-
-### Diagrama Entidad–Relación
-<p align="center">
-  <img src="./assets/er.png" alt="Modelo ER" width="700"/>
-</p>
 
 ### Diagrama Relacional
 <p align="center">
   <img src="./assets/relational.png" alt="Modelo relacional" width="700"/>
 </p>
 
+---
+
+## 🧩 Arquitectura
+
+```mermaid
+flowchart LR
+  subgraph Internet
+    A[Android App]
+  end
+
+  subgraph Firebase
+    FAuth[(Firebase Auth)]
+    FStore[(Firebase Storage)]
+  end
+
+  subgraph DMZ["DMZ / Edge"]
+    WAF[WAF/CDN]
+    RP[Reverse Proxy<br/>Nginx/Caddy :443→:80]
+  end
+
+  subgraph Private["Red Privada / Backend"]
+    API[Otter API Fastify Node.js]
+    DB[(MariaDB 10.x<br/>:3306)]
+    OBS[Observability<br/>Logs • Metrics • Traces]
+    SEC[Secrets<br/>Vault / .env]
+  end
+
+  A -- "Login con proveedor → FAuth" --> FAuth
+  FAuth -- "ID Token (OIDC/JWT)" --> A
+
+  A -- "REST JSON HTTPS 443 Auth: Bearer <JWT>" --> WAF
+  WAF -- "proxy HTTPS" --> RP
+  RP -- "HTTP 80 → API" --> API
+
+  API -- "Validate JWT (FAuth) / token introspection" --> FAuth
+  API -- "Media upload/download SDK • signed URLs" --> FStore
+  API -- "SQL queries TCP 3306" --> DB
+
+  API -- "Logs/metrics/traces" --> OBS
+  API -- "Secrets at runtime" --> SEC
+  
 ---
 
 ## 🧠 Stack Técnico
